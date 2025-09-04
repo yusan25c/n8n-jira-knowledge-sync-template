@@ -1,0 +1,442 @@
+{
+  "name": "Jira Knowledge Sync - Minimal (Summary → Comment & Assignee)",
+  "nodes": [
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=# タイトル\n{{ $('Code1').first().json.summary }}\n\n# 説明\n{{ $('Code1').first().json.description }}\n\n# コメント履歴\n{{ $json.comments }}",
+        "options": {
+          "systemMessage": "あなたはプロジェクトの開発者です。タスクがアサインされました。過去の知見を利用して対応をしてください。outputの内容をそのままJiraのコメント欄に記載します。また関連する過去の知見はIDも合わせて回答してください。"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 2,
+      "position": [
+        1440,
+        60
+      ],
+      "id": "533e454c-90bb-4883-b90e-69443a553086",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "mode": "list",
+          "value": "gpt-4.1-mini"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1400,
+        260
+      ],
+      "id": "c01289a3-8c48-4e84-8839-2874d43cf199",
+      "name": "OpenAI Chat Model",
+      "notesInFlow": false,
+      "credentials": {
+        "openAiApi": {
+          "id": "O58sSlIrZqnQulin",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "jira情報",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "<Pinecone Indexを入力>",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        1540,
+        260
+      ],
+      "id": "c686e7bb-e665-4e25-816d-df1cacdb9a56",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "ZzvftY1QQskno1hZ",
+          "name": "PineconeApi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1580,
+        400
+      ],
+      "id": "5e8df6df-bca6-43e4-890a-8ef1d87020f6",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "O58sSlIrZqnQulin",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "getAll",
+        "options": {
+          "jql": "assignee = ＜アカウントIDを入力してください＞"
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        100,
+        0
+      ],
+      "id": "82761c11-8fe8-4b0c-bb87-baeb3a8dba55",
+      "name": "Jira Issue List",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "sOpvPrimZuDCLd5E",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "issueComment",
+        "operation": "getAll",
+        "issueKey": "={{ $json.id }}",
+        "limit": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        720,
+        220
+      ],
+      "id": "5ece2666-5f9b-4ba8-9910-d19e5192ab04",
+      "name": "Jira Issue Detail",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "sOpvPrimZuDCLd5E",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "resource": "issueComment",
+        "issueKey": "={{ $('Code1').first().json.id }}",
+        "comment": "={{ $json.output }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        1920,
+        260
+      ],
+      "id": "57aceffd-e84d-4e46-91f5-9da4b923bd70",
+      "name": "Jira Add Comment",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "sOpvPrimZuDCLd5E",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "operation": "update",
+        "issueKey": "={{ $('Code1').first().json.id }}",
+        "updateFields": {
+          "assignee": {
+            "__rl": true,
+            "value": "={{ $('Code2').item.json.accountId }}",
+            "mode": "id"
+          }
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        2120,
+        440
+      ],
+      "id": "0c0db75c-b108-41d2-a68e-a1e0990ade0d",
+      "name": "Jira Assign",
+      "credentials": {
+        "jiraSoftwareCloudApi": {
+          "id": "sOpvPrimZuDCLd5E",
+          "name": "Jira SW Cloud account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": {
+            "caseSensitive": true,
+            "leftValue": "",
+            "typeValidation": "strict",
+            "version": 2
+          },
+          "conditions": [
+            {
+              "id": "d717f6a8-6736-44e5-a131-ee77ffeb4c83",
+              "leftValue": "={{ $json.accountId }}",
+              "rightValue": "＜アカウントIDを入力してください＞",
+              "operator": {
+                "type": "string",
+                "operation": "notEquals"
+              }
+            }
+          ],
+          "combinator": "and"
+        },
+        "options": {}
+      },
+      "type": "n8n-nodes-base.if",
+      "typeVersion": 2.2,
+      "position": [
+        1120,
+        220
+      ],
+      "id": "df63a556-ee03-4bc3-b317-7d56fecee715",
+      "name": "check accountId"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        300,
+        100
+      ],
+      "id": "d5fc73fc-3fce-4e81-88a7-c8f74913251e",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  'id': $input.first().json.id,\n  'summary': $input.first().json.fields.summary,\n  'description': $input.first().json.fields.description,\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        500,
+        220
+      ],
+      "id": "87f9af15-ea7b-4df3-b873-cc5b1318c9c2",
+      "name": "Code1",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "let comments = '';\nlet accountId = '';\nfor (const item of $input.all()) {\n  comments += '## ' + item.json.updated\n  comments += '\\n'\n  comments += item.json.body.content[0].content[0].text\n  comments += '\\n'\n  comments += '\\n'\n\n  accountId = item.json.updateAuthor.accountId\n}\n\nreturn {\n  'comments': comments,\n  'accountId': accountId\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        920,
+        220
+      ],
+      "id": "92fa629b-e533-4aa7-83ed-a0cc9a9a6f3f",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -60,
+        0
+      ],
+      "id": "77e9fe06-b425-4ec7-b8e7-94c59aeb5213",
+      "name": "Schedule Trigger"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Jira Add Comment",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jira Issue List": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jira Issue Detail": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jira Add Comment": {
+      "main": [
+        [
+          {
+            "node": "Jira Assign",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "check accountId": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "check accountId",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Jira Issue Detail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jira Assign": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Jira Issue List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "3b7302c0-089f-45a9-83cc-2821b375f85d",
+  "meta": {
+    "templateCredsSetupCompleted": true
+  },
+  "id": "L2KOuwNaXQNeIqOd",
+  "tags": []
+}
