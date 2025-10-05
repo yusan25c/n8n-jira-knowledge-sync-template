@@ -1,6 +1,8 @@
 # Jira Knowledge Sync Minimal (Summary, Comment, Assignee)
 15–30分で導入できる、LLMを使った **Jira 自動更新ワークフロー（n8n）**。  
 
+![](../img/img1.png)
+
 ## Quickstart
 - n8nのWorkflow画面右上「…」→ **Import from file** → `Jira_Knowledge-Sync-Minimal-Summary-Comment-Assignee.json` をインポート
 - ノードの「!」が消えるまで **認証** を設定（**Jira / OpenAI / Pinecone**）
