@@ -6,7 +6,7 @@
         "promptType": "define",
         "text": "=# タイトル\n{{ $('Code1').first().json.summary }}\n\n# 説明\n{{ $('Code1').first().json.description }}\n\n# コメント履歴\n{{ $json.comments }}",
         "options": {
-          "systemMessage": "あなたはプロジェクトの開発者です。タスクがアサインされました。過去の知見を利用して対応をしてください。outputの内容をそのままJiraのコメント欄に記載します。また関連する過去の知見はIDも合わせて回答してください。"
+          "systemMessage": "あなたはプロジェクトの開発者です。タスクがアサインされました。過去の知見を利用して対応をしてください。outputの内容をそのままJiraのコメント欄に記載します。また関連するJiraIssueIDも合わせて回答してください。"
         }
       },
       "type": "@n8n/n8n-nodes-langchain.agent",

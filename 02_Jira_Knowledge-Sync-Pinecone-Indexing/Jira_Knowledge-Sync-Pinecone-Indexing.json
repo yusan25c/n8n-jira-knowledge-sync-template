@@ -1,0 +1,312 @@
+{
+  "name": "Jira Knowledge Sync - Pinecone Indexing",
+  "nodes": [
+    {
+      "parameters": {
+        "operation": "getAll",
+        "options": {
+          "jql": "statusCategory IN (\"Done\") AND updated > -1d"
+        }
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        120,
+        140
+      ],
+      "id": "ffeeb416-bbec-4b6d-b2fc-76352e182585",
+      "name": "Jira Issue List",
+      "alwaysOutputData": false
+    },
+    {
+      "parameters": {
+        "resource": "issueComment",
+        "operation": "getAll",
+        "issueKey": "={{ $json.id }}",
+        "limit": 5,
+        "options": {}
+      },
+      "type": "n8n-nodes-base.jira",
+      "typeVersion": 1,
+      "position": [
+        740,
+        360
+      ],
+      "id": "5eb278ff-4b2d-40ac-a13a-99159f877c06",
+      "name": "Jira Issue Detail"
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "n8n-nodes-base.splitInBatches",
+      "typeVersion": 3,
+      "position": [
+        320,
+        240
+      ],
+      "id": "1e6e3731-04cb-4773-b902-08503f7dd483",
+      "name": "Loop Over Items"
+    },
+    {
+      "parameters": {
+        "jsCode": "return {\n  'id': $input.first().json.id,\n  'summary': $input.first().json.fields.summary,\n  'description': $input.first().json.fields.description,\n}"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        520,
+        360
+      ],
+      "id": "a5bbfc71-eedb-4966-b62f-675718db109c",
+      "name": "Code1",
+      "executeOnce": true
+    },
+    {
+      "parameters": {
+        "jsCode": "let comments = '';\nfor (const item of $input.all()) {\n  comments += '## ' + item.json.updated\n  comments += '\\n'\n  comments += item.json.body.content[0].content[0].text\n  comments += '\\n'\n  comments += '\\n'\n}\n\nreturn {\n  'id': $('Code1').first().json.id,\n  'summary': $('Code1').first().json.summary,\n  'description': $('Code1').first().json.description,\n  'comments': comments,\n};"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        940,
+        360
+      ],
+      "id": "5c980f99-aee4-4fbc-9e5d-cbd592e2f36c",
+      "name": "Code2"
+    },
+    {
+      "parameters": {
+        "rule": {
+          "interval": [
+            {}
+          ]
+        }
+      },
+      "type": "n8n-nodes-base.scheduleTrigger",
+      "typeVersion": 1.2,
+      "position": [
+        -80,
+        140
+      ],
+      "id": "48358c4e-9f36-4d07-b85d-35982139b963",
+      "name": "Schedule Trigger"
+    },
+    {
+      "parameters": {
+        "content": "## Step2\nRead Jira",
+        "height": 760,
+        "width": 1060,
+        "color": 4
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        100,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "ae49fa6d-5efc-4fbb-9c70-0563d9f6a911",
+      "name": "Sticky Note1"
+    },
+    {
+      "parameters": {
+        "content": "## Step1 \nScheduled Execution",
+        "height": 760
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        -160,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "5c6b673f-d9f5-43cf-b881-353806620f6e",
+      "name": "Sticky Note"
+    },
+    {
+      "parameters": {
+        "content": "## Step3\nAdd Vector Store",
+        "height": 760,
+        "width": 440,
+        "color": 5
+      },
+      "type": "n8n-nodes-base.stickyNote",
+      "position": [
+        1180,
+        0
+      ],
+      "typeVersion": 1,
+      "id": "bff28b0a-9ef1-4da6-bc56-9f3927002d4e",
+      "name": "Sticky Note2"
+    },
+    {
+      "parameters": {
+        "mode": "insert",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "<Pinecone Index>",
+          "mode": "id"
+        },
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        1240,
+        360
+      ],
+      "id": "30559523-f51d-4808-a14f-d355ceb0c555",
+      "name": "Pinecone Vector Store",
+      "notesInFlow": false
+    },
+    {
+      "parameters": {
+        "options": {}
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        1240,
+        600
+      ],
+      "id": "b1ef66ca-649b-49f5-a6b5-bd2ad433e8d3",
+      "name": "Embeddings OpenAI"
+    },
+    {
+      "parameters": {
+        "options": {
+          "metadata": {
+            "metadataValues": [
+              {
+                "name": "JiraIssueID",
+                "value": "={{ $json.id }}"
+              },
+              {
+                "name": "JiraUrl"
+              }
+            ]
+          }
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.documentDefaultDataLoader",
+      "typeVersion": 1.1,
+      "position": [
+        1420,
+        600
+      ],
+      "id": "18aca75a-697d-42a5-9d47-63820cfee0ad",
+      "name": "Default Data Loader"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Jira Issue List": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Jira Issue Detail": {
+      "main": [
+        [
+          {
+            "node": "Code2",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Loop Over Items": {
+      "main": [
+        [],
+        [
+          {
+            "node": "Code1",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code2": {
+      "main": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Code1": {
+      "main": [
+        [
+          {
+            "node": "Jira Issue Detail",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Schedule Trigger": {
+      "main": [
+        [
+          {
+            "node": "Jira Issue List",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Default Data Loader": {
+      "ai_document": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_document",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "main": [
+        [
+          {
+            "node": "Loop Over Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1"
+  },
+  "versionId": "485fc0b1-6ff8-49e7-a23f-2c37f059819d",
+  "meta": {
+  },
+  "id": "nYXuCXZGkJtkCBVN",
+  "tags": []
+}
