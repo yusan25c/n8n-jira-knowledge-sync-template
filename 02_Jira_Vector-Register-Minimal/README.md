@@ -1,8 +1,8 @@
-# 02_Jira_Knowledge-Sync-Pinecone-Indexing
+# Jira_Vector-Register-Minimal
 完了済みJiraチケット情報をPineconeに登録するワークフロー（n8n）
 
 ## Quickstart
-- n8nのWorkflow画面右上「…」→ **Import from file** → `Jira_Knowledge-Sync-Pinecone-Indexing.json` をインポート
+- n8nのWorkflow画面右上「…」→ **Import from file** → `Jira_Vector-Register-Minimal.json.json` をインポート
 - ノードの「!」が消えるまで **認証** を設定（**Jira / OpenAI / Pinecone**）
 - 画面下部の **Execute workflow** で実行
 
