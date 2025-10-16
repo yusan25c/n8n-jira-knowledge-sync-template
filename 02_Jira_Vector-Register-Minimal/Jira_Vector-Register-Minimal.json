@@ -94,15 +94,15 @@
     },
     {
       "parameters": {
-        "content": "## Step2\nRead Jira",
-        "height": 760,
+        "content": "## Step2 : Jira Trigger (Completed Tickets)\nRetrieves the summary, description, and comments of completed Jira tickets.\nThe target tickets are fetched using the Jira Issue Detail node, and the data is formatted in the Code2 node.",
+        "height": 780,
         "width": 1060,
         "color": 4
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         100,
-        0
+        -20
       ],
       "typeVersion": 1,
       "id": "ae49fa6d-5efc-4fbb-9c70-0563d9f6a911",
@@ -110,13 +110,14 @@
     },
     {
       "parameters": {
-        "content": "## Step1 \nScheduled Execution",
-        "height": 760
+        "content": "## Step1 : Scheduled Trigger\nThe workflow runs at regular intervals according to the schedule set in the Scheduled Trigger node.",
+        "height": 780,
+        "width": 280
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
-        -160,
-        0
+        -200,
+        -20
       ],
       "typeVersion": 1,
       "id": "5c6b673f-d9f5-43cf-b881-353806620f6e",
@@ -124,15 +125,15 @@
     },
     {
       "parameters": {
-        "content": "## Step3\nAdd Vector Store",
-        "height": 760,
+        "content": "## Step3 : Register to Pinecone\nConverts the retrieved ticket information into vectors and registers them in Pinecone.  ",
+        "height": 780,
         "width": 440,
         "color": 5
       },
       "type": "n8n-nodes-base.stickyNote",
       "position": [
         1180,
-        0
+        -20
       ],
       "typeVersion": 1,
       "id": "bff28b0a-9ef1-4da6-bc56-9f3927002d4e",
